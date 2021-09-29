@@ -1,4 +1,4 @@
-import { mdiPencil } from '@mdi/js'
+import { mdiPencil, mdiQrcodeScan } from '@mdi/js'
 import Icon from '@mdi/react'
 import { useStyletron, withStyle } from 'baseui'
 import { Button, KIND, SIZE } from 'baseui/button'
@@ -9,6 +9,7 @@ import React, { useEffect, useState } from 'react'
 import { useApi } from '../ApiProvider'
 import { CoilInfos } from './CoilInfos'
 import { Feedback } from './Feedback'
+import { QrScan } from './QrScan'
 
 export type Coil = {
   hersteller: string
@@ -81,6 +82,7 @@ const DigitalCoil = React.memo(() => {
   const [showCoilInfo, setShowCoilInfo] = useState(false)
   const [coil, setCoil] = useState<Coil>()
   const [showFeedback, setShowFeedback] = useState(false)
+  const [showQrScan, setShowQrScan] = useState(false)
   const [api] = useApi()
 
   useEffect(() => {
@@ -136,6 +138,21 @@ const DigitalCoil = React.memo(() => {
         >
           Aktuelles Coil zu Artikel-Nr. 123-abc
         </span>
+        <Button
+          size={SIZE.mini}
+          kind={KIND.primary}
+          onClick={() => setShowQrScan(true)}
+          startEnhancer={<Icon path={mdiQrcodeScan} size={'1rem'} />}
+          overrides={{
+            StartEnhancer: {
+              style: ({ $theme }) => ({
+                marginRight: $theme.sizing.scale300,
+              }),
+            },
+          }}
+        >
+          Scannen
+        </Button>{' '}
         <Button
           size={SIZE.mini}
           kind={KIND.primary}
@@ -494,6 +511,15 @@ const DigitalCoil = React.memo(() => {
         isOpen={showCoilInfo}
         onClose={(coil) => {
           setShowCoilInfo(false)
+          if (coil !== undefined) {
+            setCoil(coil)
+          }
+        }}
+      />
+      <QrScan
+        isOpen={showQrScan}
+        onClose={(coil) => {
+          setShowQrScan(false)
           if (coil !== undefined) {
             setCoil(coil)
           }
