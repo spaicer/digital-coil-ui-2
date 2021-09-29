@@ -31,7 +31,8 @@
     "eject": "react-scripts eject",
     "lint": "eslint --fix \"src/**/*.{ts,tsx,js,jsx}\"",
     "format": "prettier --write \"{public/**/*,src/**/*,*}.{js,jsx,ts,tsx,json,css,md,html}\"",
-    "analyze": "source-map-explorer 'build/static/js/*.js'"
+    "analyze": "source-map-explorer 'build/static/js/*.js'",
+    "generate": "openapi-generator-cli generate -i http://localhost:8080/openapi.json -g typescript-axios -o src/client"
   },
   "eslintConfig": {
     "plugins": [
@@ -73,6 +74,7 @@
     "{public/**/*,src/**/*,*}.{js,jsx,ts,tsx,json,css,md,html}": "prettier --write"
   },
   "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.4.7",
     "@types/styletron-engine-atomic": "^1.1.0",
     "@types/styletron-react": "^5.0.2",
     "@types/styletron-standard": "^2.0.1",

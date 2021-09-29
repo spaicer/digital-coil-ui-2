@@ -4,17 +4,25 @@ import { useStyletron, withStyle } from 'baseui'
 import { Button, KIND, SIZE } from 'baseui/button'
 import { FormControl } from 'baseui/form-control'
 import { Input, InputProps, StyledEndEnhancer, StyledInput } from 'baseui/input'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
+import { useApi } from '../ApiProvider'
 import { CoilInfos } from './CoilInfos'
 import { Feedback } from './Feedback'
 
 export type Coil = {
-  manufacturer?: string
-  materialNumber?: string
-  materialQuality?: string
-  materialThickness?: number
-  materialWidth?: number
+  hersteller: string
+  materialNummer: string
+  guete: string
+  breite: number
+  dickeVorn: number
+  dickeHinten: number
+  zugfestigkeitA: number
+  zugfestigkeitE: number
+  streckgrenzeA: number
+  streckgrenzeE: number
+  bruchdehnungA: number
+  bruchdehnungE: number
 }
 
 const CustomStyledInput = withStyle(StyledInput, ({ $theme }) => ({
@@ -44,14 +52,66 @@ const CustomInput: React.FC<InputProps> = React.memo((props) => {
 
 const DigitalCoil = React.memo(() => {
   const [css, theme] = useStyletron()
-  const [CM70In, setCM70In] = useState(0)
-  const [CM70Out, setCM70Out] = useState(0)
-  const [CM50In, setCM50In] = useState(0)
-  const [CM50Out, setCM50Out] = useState(0)
-  const [tension, setTension] = useState(0)
+  const [recommendation, setRecommendation] = useState<{
+    cm50In: number
+    cm50Out: number
+    cm70In: number
+    cm70Out: number
+    tension: number
+  }>({
+    cm50In: 0.0,
+    cm50Out: 0.0,
+    cm70In: 0.0,
+    cm70Out: 0.0,
+    tension: 0.0,
+  })
+  const [setpoint, setSetpoint] = useState<{
+    cm50In: number
+    cm50Out: number
+    cm70In: number
+    cm70Out: number
+    tension: number
+  }>({
+    cm50In: 0.0,
+    cm50Out: 0.0,
+    cm70In: 0.0,
+    cm70Out: 0.0,
+    tension: 0.0,
+  })
   const [showCoilInfo, setShowCoilInfo] = useState(false)
   const [coil, setCoil] = useState<Coil>()
   const [showFeedback, setShowFeedback] = useState(false)
+  const [api] = useApi()
+
+  useEffect(() => {
+    if (coil) {
+      api.defaultApi
+        .detectPointAnomaliesGetRecommendationPost({
+          breite: coil.breite,
+          dicke_vorn: coil.dickeVorn,
+          dicke_hinten: coil.dickeHinten,
+          zugfestigkeit_a: coil.zugfestigkeitA,
+          zugfestigkeit_e: coil.zugfestigkeitE,
+          streckgrenze_a: coil.streckgrenzeA,
+          streckgrenze_e: coil.streckgrenzeE,
+          bruchdehnung_a: coil.bruchdehnungA,
+          bruchdehnung_e: coil.bruchdehnungE,
+        })
+        .then((response) => {
+          setRecommendation({
+            cm50In: response.data.cm50_einlauf,
+            cm50Out: response.data.cm50_auslauf,
+            cm70In: response.data.cm70_einlauf,
+            cm70Out: response.data.cm70_auslauf,
+            tension: response.data.bandzug,
+          })
+        })
+    }
+  }, [api, coil])
+
+  useEffect(() => {
+    setSetpoint(recommendation)
+  }, [recommendation])
 
   return (
     <div
@@ -74,7 +134,7 @@ const DigitalCoil = React.memo(() => {
             paddingRight: theme.sizing.scale600,
           })}
         >
-          Aktuelles Coil
+          Aktuelles Coil zu Artikel-Nr. 123-abc
         </span>
         <Button
           size={SIZE.mini}
@@ -112,7 +172,7 @@ const DigitalCoil = React.memo(() => {
                   paddingLeft: theme.sizing.scale600,
                 })}
               >
-                {coil?.manufacturer || '--'}
+                {coil?.hersteller || '--'}
               </td>
             </tr>
             <tr>
@@ -128,7 +188,7 @@ const DigitalCoil = React.memo(() => {
                   paddingLeft: theme.sizing.scale600,
                 })}
               >
-                {coil?.materialNumber || '--'}
+                M {coil?.materialNummer || '--'}
               </td>
             </tr>
 
@@ -145,24 +205,7 @@ const DigitalCoil = React.memo(() => {
                   paddingLeft: theme.sizing.scale600,
                 })}
               >
-                {coil?.materialQuality || '--'}
-              </td>
-            </tr>
-            <tr>
-              <td
-                className={css({
-                  ...theme.typography.LabelMedium,
-                })}
-              >
-                Banddicke:
-              </td>
-              <td
-                className={css({
-                  paddingLeft: theme.sizing.scale600,
-                  textAlign: 'right',
-                })}
-              >
-                {coil?.materialThickness || '--'} mm
+                {coil?.guete || '--'}
               </td>
             </tr>
             <tr>
@@ -179,7 +222,78 @@ const DigitalCoil = React.memo(() => {
                   textAlign: 'right',
                 })}
               >
-                {coil?.materialWidth || '--'} mm
+                {coil?.breite || '--'} mm
+              </td>
+            </tr>
+            <tr>
+              <td
+                className={css({
+                  ...theme.typography.LabelMedium,
+                })}
+              >
+                Banddicke:
+              </td>
+              <td
+                className={css({
+                  paddingLeft: theme.sizing.scale600,
+                  textAlign: 'right',
+                })}
+              >
+                {coil?.dickeVorn || '--'} mm / {coil?.dickeHinten || '--'} mm
+              </td>
+            </tr>
+            <tr>
+              <td
+                className={css({
+                  ...theme.typography.LabelMedium,
+                })}
+              >
+                Zugfestigkeit:
+              </td>
+              <td
+                className={css({
+                  paddingLeft: theme.sizing.scale600,
+                  textAlign: 'right',
+                })}
+              >
+                {coil?.zugfestigkeitA || '--'} MPa /{' '}
+                {coil?.zugfestigkeitE || '--'} MPa
+              </td>
+            </tr>
+            <tr>
+              <td
+                className={css({
+                  ...theme.typography.LabelMedium,
+                })}
+              >
+                Streckgrenze:
+              </td>
+              <td
+                className={css({
+                  paddingLeft: theme.sizing.scale600,
+                  textAlign: 'right',
+                })}
+              >
+                {coil?.streckgrenzeA || '--'} N/mm² /{' '}
+                {coil?.streckgrenzeE || '--'} N/mm²
+              </td>
+            </tr>
+            <tr>
+              <td
+                className={css({
+                  ...theme.typography.LabelMedium,
+                })}
+              >
+                Bruchdehnung:
+              </td>
+              <td
+                className={css({
+                  paddingLeft: theme.sizing.scale600,
+                  textAlign: 'right',
+                })}
+              >
+                {coil?.bruchdehnungA || '--'} % / {coil?.bruchdehnungE || '--'}{' '}
+                %
               </td>
             </tr>
           </tbody>
@@ -214,13 +328,16 @@ const DigitalCoil = React.memo(() => {
           <FormControl label={() => 'CM70 Einlauf'}>
             <Input
               endEnhancer={'mm'}
-              value={CM70In}
+              value={setpoint.cm70In}
               type={'number'}
               step={0.1}
               min={-5}
               max={10}
               onChange={(e) => {
-                setCM70In(e.currentTarget.valueAsNumber)
+                setSetpoint({
+                  ...setpoint,
+                  cm70In: e.currentTarget.valueAsNumber,
+                })
               }}
             />
           </FormControl>
@@ -229,13 +346,16 @@ const DigitalCoil = React.memo(() => {
           <FormControl label={() => 'CM70 Auslauf'}>
             <Input
               endEnhancer={'mm'}
-              value={CM70Out}
+              value={setpoint.cm70Out}
               type={'number'}
               step={0.1}
               min={-5}
               max={10}
               onChange={(e) => {
-                setCM70Out(e.currentTarget.valueAsNumber)
+                setSetpoint({
+                  ...setpoint,
+                  cm70Out: e.currentTarget.valueAsNumber,
+                })
               }}
             />
           </FormControl>
@@ -244,13 +364,16 @@ const DigitalCoil = React.memo(() => {
           <FormControl label={() => 'CM50 Einlauf'}>
             <Input
               endEnhancer={'mm'}
-              value={CM50In}
+              value={setpoint.cm50In}
               type={'number'}
               step={0.1}
               min={-5}
               max={10}
               onChange={(e) => {
-                setCM50In(e.currentTarget.valueAsNumber)
+                setSetpoint({
+                  ...setpoint,
+                  cm50In: e.currentTarget.valueAsNumber,
+                })
               }}
             />
           </FormControl>
@@ -259,13 +382,16 @@ const DigitalCoil = React.memo(() => {
           <FormControl label={() => 'CM50 Auslauf'}>
             <Input
               endEnhancer={'mm'}
-              value={CM50Out}
+              value={setpoint.cm50Out}
               type={'number'}
               step={0.1}
               min={-5}
               max={10}
               onChange={(e) => {
-                setCM50Out(e.currentTarget.valueAsNumber)
+                setSetpoint({
+                  ...setpoint,
+                  cm50Out: e.currentTarget.valueAsNumber,
+                })
               }}
             />
           </FormControl>
@@ -274,13 +400,16 @@ const DigitalCoil = React.memo(() => {
           <FormControl label={() => 'Bandzug'}>
             <Input
               endEnhancer={'%'}
-              value={tension}
+              value={setpoint.tension}
               type={'number'}
               step={1}
               min={0}
               max={100}
               onChange={(e) => {
-                setTension(e.currentTarget.valueAsNumber)
+                setSetpoint({
+                  ...setpoint,
+                  tension: e.currentTarget.valueAsNumber,
+                })
               }}
             />
           </FormControl>
@@ -302,27 +431,47 @@ const DigitalCoil = React.memo(() => {
         </div>
         <div>
           <FormControl label={() => 'CM70 Einlauf'}>
-            <CustomInput endEnhancer={'mm'} value={CM70In} disabled />
+            <CustomInput
+              endEnhancer={'mm'}
+              value={recommendation.cm70In}
+              disabled
+            />
           </FormControl>
         </div>
         <div>
           <FormControl label={() => 'CM70 Auslauf'}>
-            <CustomInput endEnhancer={'mm'} value={CM70Out} disabled />
+            <CustomInput
+              endEnhancer={'mm'}
+              value={recommendation.cm70Out}
+              disabled
+            />
           </FormControl>
         </div>
         <div>
           <FormControl label={() => 'CM50 Einlauf'}>
-            <CustomInput endEnhancer={'mm'} value={CM50In} disabled />
+            <CustomInput
+              endEnhancer={'mm'}
+              value={recommendation.cm50In}
+              disabled
+            />
           </FormControl>
         </div>
         <div>
           <FormControl label={() => 'CM50 Auslauf'}>
-            <CustomInput endEnhancer={'mm'} value={CM50Out} disabled />
+            <CustomInput
+              endEnhancer={'mm'}
+              value={recommendation.cm50Out}
+              disabled
+            />
           </FormControl>
         </div>
         <div>
           <FormControl label={() => 'Bandzug'}>
-            <CustomInput endEnhancer={'%'} value={tension} disabled />
+            <CustomInput
+              endEnhancer={'%'}
+              value={recommendation.tension}
+              disabled
+            />
           </FormControl>
         </div>
       </div>
@@ -345,7 +494,9 @@ const DigitalCoil = React.memo(() => {
         isOpen={showCoilInfo}
         onClose={(coil) => {
           setShowCoilInfo(false)
-          setCoil(coil)
+          if (coil !== undefined) {
+            setCoil(coil)
+          }
         }}
       />
       <Feedback

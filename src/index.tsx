@@ -3,12 +3,23 @@ import './index.css'
 import React from 'react'
 import ReactDOM from 'react-dom'
 
+import { ApiProvider } from './ApiProvider'
 import App from './App'
+import { Configuration } from './client'
 import reportWebVitals from './reportWebVitals'
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <ApiProvider
+      configuration={
+        new Configuration({
+          basePath:
+            process.env.RECOMMENDER_BASE_PATH || 'http://localhost:8080',
+        })
+      }
+    >
+      <App />
+    </ApiProvider>
   </React.StrictMode>,
   document.getElementById('root')
 )
