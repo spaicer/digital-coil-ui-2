@@ -4,6 +4,8 @@ import { useStyletron, withStyle } from 'baseui'
 import { Button, KIND, SIZE } from 'baseui/button'
 import { FormControl } from 'baseui/form-control'
 import { Input, InputProps, StyledEndEnhancer, StyledInput } from 'baseui/input'
+import { Layer } from 'baseui/layer'
+import { ProgressBar } from 'baseui/progress-bar'
 import { toaster, ToasterContainer } from 'baseui/toast'
 import React, { useEffect, useState } from 'react'
 
@@ -84,10 +86,12 @@ const DigitalCoil = React.memo(() => {
   const [coil, setCoil] = useState<Coil>()
   const [showFeedback, setShowFeedback] = useState(false)
   const [showQrScan, setShowQrScan] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [api] = useApi()
 
   useEffect(() => {
     if (coil) {
+      setLoading(true)
       api.defaultApi
         .detectPointAnomaliesGetRecommendationPost({
           breite: coil.breite,
@@ -101,13 +105,25 @@ const DigitalCoil = React.memo(() => {
           bruchdehnung_e: coil.bruchdehnungE,
         })
         .then((response) => {
-          setRecommendation({
-            cm50In: response.data.cm50_einlauf,
-            cm50Out: response.data.cm50_auslauf,
-            cm70In: response.data.cm70_einlauf,
-            cm70Out: response.data.cm70_auslauf,
-            tension: response.data.bandzug,
+          return new Promise<void>((resolve, reject) => {
+            setTimeout(() => {
+              setRecommendation({
+                cm50In: response.data.cm50_einlauf,
+                cm50Out: response.data.cm50_auslauf,
+                cm70In: response.data.cm70_einlauf,
+                cm70Out: response.data.cm70_auslauf,
+                tension: response.data.bandzug,
+              })
+              resolve()
+            }, 2500)
           })
+        })
+        .catch((error) => {
+          console.log(error)
+          toaster.negative(`${error}`, { key: 'api' })
+        })
+        .finally(() => {
+          setLoading(false)
         })
     }
   }, [api, coil])
@@ -125,6 +141,33 @@ const DigitalCoil = React.memo(() => {
         flexDirection: 'column',
       })}
     >
+      <Layer>
+        <div
+          style={{
+            boxSizing: 'border-box',
+            width: '100vw',
+            position: 'fixed',
+            top: '76px',
+            left: '0',
+          }}
+        >
+          {loading && (
+            <ProgressBar
+              infinite
+              successValue={100}
+              overrides={{
+                BarContainer: {
+                  style: {
+                    marginTop: 0,
+                    marginLeft: 0,
+                    marginRight: 0,
+                  },
+                },
+              }}
+            />
+          )}
+        </div>
+      </Layer>
       <div
         className={css({
           ...theme.typography.HeadingSmall,
