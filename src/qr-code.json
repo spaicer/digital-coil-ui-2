@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "type": "object",
+  "properties": {
+    "breite": {
+      "type": "number"
+    },
+    "dickeVorn": {
+      "type": "number"
+    },
+    "dickeHinten": {
+      "type": "number"
+    },
+    "zugfestigkeitA": {
+      "type": "number"
+    },
+    "zugfestigkeitE": {
+      "type": "number"
+    },
+    "streckgrenzeA": {
+      "type": "number"
+    },
+    "streckgrenzeE": {
+      "type": "number"
+    },
+    "bruchdehnungA": {
+      "type": "number"
+    },
+    "bruchdehnungE": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "breite",
+    "dickeVorn",
+    "dickeHinten",
+    "zugfestigkeitA",
+    "zugfestigkeitE",
+    "streckgrenzeA",
+    "streckgrenzeE",
+    "bruchdehnungA",
+    "bruchdehnungE"
+  ]
+}

@@ -4,6 +4,7 @@ import { useStyletron, withStyle } from 'baseui'
 import { Button, KIND, SIZE } from 'baseui/button'
 import { FormControl } from 'baseui/form-control'
 import { Input, InputProps, StyledEndEnhancer, StyledInput } from 'baseui/input'
+import { toaster, ToasterContainer } from 'baseui/toast'
 import React, { useEffect, useState } from 'react'
 
 import { useApi } from '../ApiProvider'
@@ -521,6 +522,10 @@ const DigitalCoil = React.memo(() => {
         onClose={(coil) => {
           setShowQrScan(false)
           if (coil !== undefined) {
+            toaster.positive('QR-Code erfolgreich gescannt!', {
+              key: 'qr-scan',
+              autoHideDuration: 2000,
+            })
             setCoil(coil)
           }
         }}
@@ -531,6 +536,7 @@ const DigitalCoil = React.memo(() => {
           setShowFeedback(false)
         }}
       />
+      <ToasterContainer />
     </div>
   )
 })

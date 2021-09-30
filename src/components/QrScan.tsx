@@ -1,3 +1,5 @@
+import Ajv from 'ajv'
+import draft6MetaSchema from 'ajv/dist/refs/json-schema-draft-06.json'
 import { KIND } from 'baseui/button'
 import {
   Modal,
@@ -8,26 +10,40 @@ import {
   ROLE,
   SIZE,
 } from 'baseui/modal'
-import React, { useCallback } from 'react'
+import { KIND as NOTIFICATION_KIND, Notification } from 'baseui/notification'
+import React, { useCallback, useState } from 'react'
 import QrReader from 'react-qr-reader'
 
+import schema from '../qr-code.json'
 import { Coil } from './DigitalCoil'
+
+const ajv = new Ajv()
+ajv.addMetaSchema(draft6MetaSchema)
+const validate = ajv.compile(schema)
 
 const QrScan: React.FC<{
   isOpen: boolean
   onClose: (coil?: Coil) => void
 }> = React.memo(({ isOpen, onClose }) => {
+  const [invalid, setInvalid] = useState(false)
   const handleScan = useCallback(
     (data) => {
       if (data !== null) {
-        const coil = JSON.parse(data)
-        if (coil) {
-          onClose({
-            ...coil,
-            hersteller: 'Mendritzki',
-            materialNummer: '123',
-            guete: 'DC01',
-          })
+        try {
+          const coil = JSON.parse(data) as Coil
+          if (coil && validate(coil)) {
+            setInvalid(false)
+            onClose({
+              ...coil,
+              hersteller: 'Mendritzki',
+              materialNummer: '123',
+              guete: 'DC01',
+            })
+          } else {
+            setInvalid(true)
+          }
+        } catch (error) {
+          setInvalid(true)
         }
       }
     },
@@ -49,6 +65,25 @@ const QrScan: React.FC<{
     >
       <ModalHeader>QR-Code scannen</ModalHeader>
       <ModalBody>
+        {invalid && (
+          <Notification
+            kind={NOTIFICATION_KIND.negative}
+            overrides={{
+              Body: {
+                style: ({ $theme }) => ({
+                  width: 'auto',
+                  marginBottom: $theme.sizing.scale800,
+                }),
+              },
+            }}
+            closeable
+            onClose={() => {
+              setInvalid(false)
+            }}
+          >
+            Unbekannter QR-Code
+          </Notification>
+        )}
         <QrReader
           delay={300}
           onError={handleError}
