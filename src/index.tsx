@@ -14,7 +14,8 @@ ReactDOM.render(
       configuration={
         new Configuration({
           basePath:
-            process.env.RECOMMENDER_BASE_PATH || 'http://localhost:8080',
+            process.env.REACT_APP_RECOMMENDER_BASE_PATH ||
+            'http://localhost:8080',
         })
       }
     >
