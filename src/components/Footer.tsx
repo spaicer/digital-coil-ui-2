@@ -1,6 +1,7 @@
 import { styled } from 'baseui'
 import React from 'react'
 
+import logoDezem from '../assets/logo_dezem.svg'
 import logoDFKI from '../assets/logo_dfki.png'
 import logoFeintool from '../assets/logo_feintool.png'
 import logoSeitec from '../assets/logo_seitec.png'
@@ -44,6 +45,9 @@ const Footer = React.memo(() => {
         </StyledLink>
         <StyledLink href={'https://seitec.info'}>
           <img src={logoSeitec} alt={'SEITEC GmbH'} height={'24px'} />
+        </StyledLink>
+        <StyledLink href={'https://dezem.de'}>
+          <img src={logoDezem} alt={'deZem GmbH'} height={'24px'} />
         </StyledLink>
       </StyledLogoContainer>
     </StyledContainer>
