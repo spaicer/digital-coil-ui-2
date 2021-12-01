@@ -13,9 +13,7 @@ ReactDOM.render(
     <ApiProvider
       configuration={
         new Configuration({
-          basePath:
-            process.env.REACT_APP_RECOMMENDER_BASE_PATH ||
-            'http://localhost:8080',
+          basePath: window.env.RECOMMENDER_BASE_PATH || 'http://localhost:8080',
         })
       }
     >
