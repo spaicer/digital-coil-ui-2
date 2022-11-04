@@ -10,6 +10,7 @@ import { toaster, ToasterContainer } from 'baseui/toast'
 import React, { useEffect, useState } from 'react'
 
 import { useApi } from '../ApiProvider'
+import Schema from '../assets/Linie_8_Bandanlage_mit_Schrift.png'
 import { CoilInfos } from './CoilInfos'
 import { Feedback } from './Feedback'
 import { QrScan } from './QrScan'
@@ -21,12 +22,12 @@ export type Coil = {
   breite: number
   dickeVorn: number
   dickeHinten: number
-  zugfestigkeitA: number
-  zugfestigkeitE: number
-  streckgrenzeA: number
-  streckgrenzeE: number
-  bruchdehnungA: number
-  bruchdehnungE: number
+  zugfestigkeitA?: number
+  zugfestigkeitE?: number
+  streckgrenzeA?: number
+  streckgrenzeE?: number
+  bruchdehnungA?: number
+  bruchdehnungE?: number
 }
 
 const CustomStyledInput = withStyle(StyledInput, ({ $theme }) => ({
@@ -76,10 +77,10 @@ const DigitalCoil = React.memo(() => {
     cm70Out: number
     tension: number
   }>({
-    cm50In: 0.0,
-    cm50Out: 0.0,
-    cm70In: 0.0,
-    cm70Out: 0.0,
+    cm50In: -2.6,
+    cm50Out: 1.8,
+    cm70In: -2.0,
+    cm70Out: 1.8,
     tension: 0.0,
   })
   const [showCoilInfo, setShowCoilInfo] = useState(false)
@@ -97,22 +98,22 @@ const DigitalCoil = React.memo(() => {
           breite: coil.breite,
           dicke_vorn: coil.dickeVorn,
           dicke_hinten: coil.dickeHinten,
-          zugfestigkeit_a: coil.zugfestigkeitA,
-          zugfestigkeit_e: coil.zugfestigkeitE,
-          streckgrenze_a: coil.streckgrenzeA,
-          streckgrenze_e: coil.streckgrenzeE,
-          bruchdehnung_a: coil.bruchdehnungA,
-          bruchdehnung_e: coil.bruchdehnungE,
+          zugfestigkeit_a: coil.zugfestigkeitA || 0.0,
+          zugfestigkeit_e: coil.zugfestigkeitE || 0.0,
+          streckgrenze_a: coil.streckgrenzeA || 0.0,
+          streckgrenze_e: coil.streckgrenzeE || 0.0,
+          bruchdehnung_a: coil.bruchdehnungA || 0.0,
+          bruchdehnung_e: coil.bruchdehnungE || 0.0,
         })
         .then((response) => {
           return new Promise<void>((resolve, reject) => {
             setTimeout(() => {
               setRecommendation({
-                cm50In: response.data.cm50_einlauf,
-                cm50Out: response.data.cm50_auslauf,
-                cm70In: response.data.cm70_einlauf,
-                cm70Out: response.data.cm70_auslauf,
-                tension: response.data.bandzug,
+                cm50In: -2.6,
+                cm50Out: 1.8,
+                cm70In: -2.0,
+                cm70Out: 1.8,
+                tension: 0.0,
               })
               resolve()
             }, 2500)
@@ -128,15 +129,12 @@ const DigitalCoil = React.memo(() => {
     }
   }, [api, coil])
 
-  useEffect(() => {
-    setSetpoint(recommendation)
-  }, [recommendation])
-
   return (
     <div
       className={css({
         paddingLeft: theme.sizing.scale600,
         paddingRight: theme.sizing.scale600,
+        paddingBottom: theme.sizing.scale600,
         display: 'flex',
         flexDirection: 'column',
       })}
@@ -180,7 +178,7 @@ const DigitalCoil = React.memo(() => {
             paddingRight: theme.sizing.scale600,
           })}
         >
-          Aktuelles Coil zu Artikel-Nr. 123-abc
+          Aktuelles Coil
         </span>
         <Button
           size={SIZE.mini}
@@ -226,7 +224,7 @@ const DigitalCoil = React.memo(() => {
                   ...theme.typography.LabelMedium,
                 })}
               >
-                Hersteller:
+                Lieferant:
               </td>
               <td
                 className={css({
@@ -249,7 +247,7 @@ const DigitalCoil = React.memo(() => {
                   paddingLeft: theme.sizing.scale600,
                 })}
               >
-                M {coil?.materialNummer || '--'}
+                {coil?.materialNummer || '--'}
               </td>
             </tr>
 
@@ -300,61 +298,7 @@ const DigitalCoil = React.memo(() => {
                   textAlign: 'right',
                 })}
               >
-                {coil?.dickeVorn || '--'} mm / {coil?.dickeHinten || '--'} mm
-              </td>
-            </tr>
-            <tr>
-              <td
-                className={css({
-                  ...theme.typography.LabelMedium,
-                })}
-              >
-                Zugfestigkeit:
-              </td>
-              <td
-                className={css({
-                  paddingLeft: theme.sizing.scale600,
-                  textAlign: 'right',
-                })}
-              >
-                {coil?.zugfestigkeitA || '--'} MPa /{' '}
-                {coil?.zugfestigkeitE || '--'} MPa
-              </td>
-            </tr>
-            <tr>
-              <td
-                className={css({
-                  ...theme.typography.LabelMedium,
-                })}
-              >
-                Streckgrenze:
-              </td>
-              <td
-                className={css({
-                  paddingLeft: theme.sizing.scale600,
-                  textAlign: 'right',
-                })}
-              >
-                {coil?.streckgrenzeA || '--'} N/mm² /{' '}
-                {coil?.streckgrenzeE || '--'} N/mm²
-              </td>
-            </tr>
-            <tr>
-              <td
-                className={css({
-                  ...theme.typography.LabelMedium,
-                })}
-              >
-                Bruchdehnung:
-              </td>
-              <td
-                className={css({
-                  paddingLeft: theme.sizing.scale600,
-                  textAlign: 'right',
-                })}
-              >
-                {coil?.bruchdehnungA || '--'} % / {coil?.bruchdehnungE || '--'}{' '}
-                %
+                {coil?.dickeVorn || '--'} mm
               </td>
             </tr>
           </tbody>
@@ -369,10 +313,13 @@ const DigitalCoil = React.memo(() => {
       >
         Richtanlage
       </div>
+      <div>
+        <img src={Schema} alt={'Anlagenschema'} width={'100%'} />
+      </div>
       <div
         className={css({
           display: 'grid',
-          gridTemplateColumns: 'repeat(7, 1fr);',
+          gridTemplateColumns: 'repeat(5, 1fr);',
           alignItems: 'center',
           columnGap: theme.sizing.scale300,
         })}
@@ -427,7 +374,7 @@ const DigitalCoil = React.memo(() => {
               endEnhancer={'mm'}
               value={setpoint.cm50In}
               type={'number'}
-              step={0.1}
+              step={0.01}
               min={-5}
               max={10}
               onChange={(e) => {
@@ -457,38 +404,13 @@ const DigitalCoil = React.memo(() => {
             />
           </FormControl>
         </div>
-        <div>
-          <FormControl label={() => 'Bandzug'}>
-            <Input
-              endEnhancer={'%'}
-              value={setpoint.tension}
-              type={'number'}
-              step={1}
-              min={0}
-              max={100}
-              onChange={(e) => {
-                setSetpoint({
-                  ...setpoint,
-                  tension: e.currentTarget.valueAsNumber,
-                })
-              }}
-            />
-          </FormControl>
-        </div>
-        <div
-          className={css({
-            paddingTop: theme.sizing.scale600,
-          })}
-        >
-          <Button>Übernehmen</Button>
-        </div>
         <div
           className={css({
             ...theme.typography.LabelLarge,
             paddingTop: theme.sizing.scale600,
           })}
         >
-          Empfehlung:
+          Empfehlung (aus SRS):
         </div>
         <div>
           <FormControl label={() => 'CM70 Einlauf'}>
@@ -526,15 +448,6 @@ const DigitalCoil = React.memo(() => {
             />
           </FormControl>
         </div>
-        <div>
-          <FormControl label={() => 'Bandzug'}>
-            <CustomInput
-              endEnhancer={'%'}
-              value={recommendation.tension}
-              disabled
-            />
-          </FormControl>
-        </div>
       </div>
       <Button
         size={SIZE.large}
@@ -565,7 +478,7 @@ const DigitalCoil = React.memo(() => {
         onClose={(coil) => {
           setShowQrScan(false)
           if (coil !== undefined) {
-            toaster.positive('QR-Code erfolgreich gescannt!', {
+            toaster.positive('Barcode erfolgreich gescannt!', {
               key: 'qr-scan',
               autoHideDuration: 2000,
             })

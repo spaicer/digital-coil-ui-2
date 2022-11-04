@@ -11,12 +11,13 @@ const Step1: React.FC<
   Partial<StepWizardChildProps> & {
     evenness?: boolean
     onChange: (evenness: boolean) => void
+    done: () => void
   }
-> = ({ nextStep, evenness, onChange }) => {
+> = ({ nextStep, evenness, onChange, done }) => {
   const [css, theme] = useStyletron()
   return (
     <>
-      <ModalHeader>Ebenheit</ModalHeader>
+      <ModalHeader>Feedback</ModalHeader>
       <ModalBody>
         <div
           className={css({
@@ -66,10 +67,10 @@ const Step1: React.FC<
       <ModalFooter>
         <ModalButton
           kind={KIND.primary}
-          onClick={nextStep}
+          onClick={done}
           disabled={evenness === undefined}
         >
-          Weiter
+          Fertig
         </ModalButton>
       </ModalFooter>
     </>

@@ -1,5 +1,3 @@
-import Ajv from 'ajv'
-import draft6MetaSchema from 'ajv/dist/refs/json-schema-draft-06.json'
 import { KIND } from 'baseui/button'
 import {
   Modal,
@@ -11,38 +9,33 @@ import {
   SIZE,
 } from 'baseui/modal'
 import { KIND as NOTIFICATION_KIND, Notification } from 'baseui/notification'
-import React, { useCallback, useState } from 'react'
-import QrReader from 'react-qr-reader'
+import { Select, Value } from 'baseui/select'
+import React, { useCallback, useEffect, useState } from 'react'
+import BarcodeScannerComponent from 'react-qr-barcode-scanner'
 
-import schema from '../qr-code.json'
 import { Coil } from './DigitalCoil'
-
-const ajv = new Ajv()
-ajv.addMetaSchema(draft6MetaSchema)
-const validate = ajv.compile(schema)
 
 const QrScan: React.FC<{
   isOpen: boolean
   onClose: (coil?: Coil) => void
 }> = React.memo(({ isOpen, onClose }) => {
   const [invalid, setInvalid] = useState(false)
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([])
+  const [selectedDevice, setSelectedDevice] = React.useState<Value>()
   const handleScan = useCallback(
-    (data) => {
-      if (data !== null) {
-        try {
-          const coil = JSON.parse(data) as Coil
-          if (coil && validate(coil)) {
-            setInvalid(false)
-            onClose({
-              ...coil,
-              hersteller: 'Mendritzki',
-              materialNummer: '123',
-              guete: 'DC01',
-            })
-          } else {
-            setInvalid(true)
-          }
-        } catch (error) {
+    (error, result) => {
+      if (result) {
+        if ((result.text as string).startsWith('FM')) {
+          setInvalid(false)
+          onClose({
+            hersteller: 'Reinhold Mendritzki Kaltwalzwerk GmbH & Co. KG',
+            materialNummer: result.text,
+            guete: 'DC01',
+            breite: 355.4,
+            dickeHinten: 1.77,
+            dickeVorn: 1.77,
+          })
+        } else {
           setInvalid(true)
         }
       }
@@ -50,7 +43,30 @@ const QrScan: React.FC<{
     [onClose]
   )
 
-  const handleError = useCallback((erro) => {}, [])
+  useEffect(() => {
+    if (navigator.mediaDevices?.enumerateDevices) {
+      // List cameras
+      navigator.mediaDevices
+        .enumerateDevices()
+        .then((devices) => {
+          return devices.filter(({ kind }) => kind === 'videoinput')
+        })
+        .then(setVideoDevices)
+        .catch((err) => {
+          console.error(`${err.name}: ${err.message}`)
+        })
+    }
+  }, [])
+
+  useEffect(() => {
+    if (videoDevices.length > 0) {
+      setSelectedDevice([{ id: videoDevices[0].deviceId }])
+    }
+  }, [videoDevices])
+
+  const handleError = useCallback((error) => {
+    console.log(error)
+  }, [])
   return (
     <Modal
       isOpen={isOpen}
@@ -63,7 +79,7 @@ const QrScan: React.FC<{
       size={SIZE.default}
       role={ROLE.dialog}
     >
-      <ModalHeader>QR-Code scannen</ModalHeader>
+      <ModalHeader>Barcode scannen</ModalHeader>
       <ModalBody>
         {invalid && (
           <Notification
@@ -81,14 +97,37 @@ const QrScan: React.FC<{
               setInvalid(false)
             }}
           >
-            Unbekannter QR-Code
+            Unbekannter Barcode
           </Notification>
         )}
-        <QrReader
-          delay={300}
+        {videoDevices.length > 1 && (
+          <Select
+            options={videoDevices.map(({ label, deviceId }) => ({
+              label,
+              id: deviceId,
+            }))}
+            value={selectedDevice}
+            placeholder={'Select Video Device'}
+            onChange={(params) => setSelectedDevice(params.value)}
+            searchable={false}
+            clearable={false}
+            overrides={{
+              Root: {
+                style: ({ $theme }) => ({
+                  marginBottom: $theme.sizing.scale600,
+                }),
+              },
+            }}
+          />
+        )}
+        <BarcodeScannerComponent
+          width={'100%'}
+          height={'100%'}
+          videoConstraints={{
+            deviceId: selectedDevice?.[0]?.id as string | undefined,
+          }}
+          onUpdate={handleScan}
           onError={handleError}
-          onScan={handleScan}
-          style={{ width: '100%' }}
         />
       </ModalBody>
       <ModalFooter>

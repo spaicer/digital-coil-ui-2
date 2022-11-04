@@ -35,7 +35,7 @@ const StyledLink = styled('a', ({ $theme }) => ({
 const Footer = React.memo(() => {
   return (
     <StyledContainer>
-      <StyledTextContainer>© 2021 SEITEC GmbH</StyledTextContainer>
+      <StyledTextContainer>© 2021 - 2022 SEITEC GmbH</StyledTextContainer>
       <StyledLogoContainer>
         <StyledLink href={'https://feintool.com'}>
           <img src={logoFeintool} alt={'Feintool'} height={'32px'} />

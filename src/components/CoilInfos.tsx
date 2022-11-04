@@ -55,28 +55,9 @@ const CoilInfos: React.FC<{
       guete !== undefined &&
       breite !== undefined &&
       dickeVorn !== undefined &&
-      dickeHinten !== undefined &&
-      zugfestigkeitA !== undefined &&
-      zugfestigkeitE !== undefined &&
-      streckgrenzeA !== undefined &&
-      streckgrenzeE !== undefined &&
-      bruchdehnungA !== undefined &&
-      bruchdehnungE !== undefined
+      dickeHinten !== undefined
     )
-  }, [
-    breite,
-    bruchdehnungA,
-    bruchdehnungE,
-    dickeHinten,
-    dickeVorn,
-    guete,
-    hersteller,
-    materialNummer,
-    streckgrenzeA,
-    streckgrenzeE,
-    zugfestigkeitA,
-    zugfestigkeitE,
-  ])
+  }, [breite, dickeHinten, dickeVorn, guete, hersteller, materialNummer])
 
   return (
     <Modal
@@ -96,7 +77,12 @@ const CoilInfos: React.FC<{
           <Select
             placeholder={'Hersteller wählen ...'}
             value={hersteller ? [{ id: hersteller }] : []}
-            options={[{ label: 'Mendritzki', id: 'Mendritzki' }]}
+            options={[
+              {
+                label: 'Reinhold Mendritzki Kaltwalzwerk GmbH & Co. KG',
+                id: 'Reinhold Mendritzki Kaltwalzwerk GmbH & Co. KG',
+              },
+            ]}
             onChange={(params) => {
               setHersteller(params.option?.id as string)
             }}
@@ -105,7 +91,6 @@ const CoilInfos: React.FC<{
         <FormControl label={() => 'Materialnummer'}>
           <Input
             value={materialNummer || ''}
-            startEnhancer={'M'}
             onChange={(e) => {
               setMaterialNummer(e.currentTarget.value)
             }}
@@ -132,103 +117,12 @@ const CoilInfos: React.FC<{
             max={10}
           />
         </FormControl>
-        <FormControl label={() => 'Banddicke (vorn)'}>
+        <FormControl label={() => 'Banddicke'}>
           <Input
             value={dickeVorn || ''}
             endEnhancer={'mm'}
             onChange={(e) => {
               setDickeVorn(e.currentTarget.valueAsNumber)
-            }}
-            type={'number'}
-            step={0.1}
-            min={0}
-            max={1000}
-          />
-        </FormControl>
-        <FormControl label={() => 'Banddicke (hinten)'}>
-          <Input
-            value={dickeHinten || ''}
-            endEnhancer={'mm'}
-            onChange={(e) => {
-              setDickeHinten(e.currentTarget.valueAsNumber)
-            }}
-            type={'number'}
-            step={0.1}
-            min={0}
-            max={1000}
-          />
-        </FormControl>
-        <FormControl label={() => 'Zugfestigfkeit A'}>
-          <Input
-            value={zugfestigkeitA || ''}
-            endEnhancer={'MPa'}
-            onChange={(e) => {
-              setZugfestigkeitA(e.currentTarget.valueAsNumber)
-            }}
-            type={'number'}
-            step={0.1}
-            min={0}
-            max={1000}
-          />
-        </FormControl>
-        <FormControl label={() => 'Zugfestigfkeit E'}>
-          <Input
-            value={zugfestigkeitE || ''}
-            endEnhancer={'MPa'}
-            onChange={(e) => {
-              setZugfestigkeitE(e.currentTarget.valueAsNumber)
-            }}
-            type={'number'}
-            step={0.1}
-            min={0}
-            max={1000}
-          />
-        </FormControl>
-        <FormControl label={() => 'Streckgrenze A'}>
-          <Input
-            value={streckgrenzeA || ''}
-            endEnhancer={'N/mm²'}
-            onChange={(e) => {
-              setStreckgrenzeA(e.currentTarget.valueAsNumber)
-            }}
-            type={'number'}
-            step={0.1}
-            min={0}
-            max={1000}
-          />
-        </FormControl>
-        <FormControl label={() => 'Streckgrenze E'}>
-          <Input
-            value={streckgrenzeE || ''}
-            endEnhancer={'N/mm²'}
-            onChange={(e) => {
-              setStreckgrenzeE(e.currentTarget.valueAsNumber)
-            }}
-            type={'number'}
-            step={0.1}
-            min={0}
-            max={1000}
-          />
-        </FormControl>
-        <FormControl label={() => 'Bruchdehnung A'}>
-          <Input
-            value={bruchdehnungA || ''}
-            endEnhancer={'%'}
-            onChange={(e) => {
-              setBruchdehnungA(e.currentTarget.valueAsNumber)
-            }}
-            type={'number'}
-            step={0.1}
-            min={0}
-            max={1000}
-          />
-        </FormControl>
-        <FormControl label={() => 'Bruchdehnung E'}>
-          <Input
-            value={bruchdehnungE || ''}
-            endEnhancer={'%'}
-            onChange={(e) => {
-              setBruchdehnungE(e.currentTarget.valueAsNumber)
             }}
             type={'number'}
             step={0.1}

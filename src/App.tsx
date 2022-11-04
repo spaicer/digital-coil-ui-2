@@ -20,7 +20,16 @@ const engine = new Styletron()
 function App() {
   return (
     <StyletronProvider value={engine}>
-      <BaseProvider theme={LightTheme}>
+      <BaseProvider
+        theme={LightTheme}
+        overrides={{
+          AppContainer: {
+            style: {
+              height: '100%',
+            },
+          },
+        }}
+      >
         <Navigation
           overrides={{
             Root: {
@@ -51,7 +60,7 @@ function App() {
           <NavigationList $align={ALIGN.right}>
             <NavigationItem>
               <StyledLink href={'https://bmwi.de'}>
-                <img src={logoBmwi} alt={'BMWi'} height={'45px'} />
+                <img src={logoBmwi} alt={'BMWi'} height={'40px'} />
               </StyledLink>
             </NavigationItem>
           </NavigationList>
@@ -69,7 +78,14 @@ function App() {
             <Footer />
           </div>
         </Layer>
-        <DigitalCoil />
+        <div
+          style={{
+            height: 'calc(100% - 103px)',
+            overflow: 'auto',
+          }}
+        >
+          <DigitalCoil />
+        </div>
       </BaseProvider>
     </StyletronProvider>
   )
