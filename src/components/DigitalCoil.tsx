@@ -145,7 +145,7 @@ const DigitalCoil = React.memo(() => {
             boxSizing: 'border-box',
             width: '100vw',
             position: 'fixed',
-            top: '76px',
+            top: '71px',
             left: '0',
           }}
         >
