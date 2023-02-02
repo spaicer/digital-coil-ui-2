@@ -1,4 +1,4 @@
-import { mdiPencil, mdiQrcodeScan } from '@mdi/js'
+import { mdiQrcodeScan } from '@mdi/js'
 import Icon from '@mdi/react'
 import { useStyletron, withStyle } from 'baseui'
 import { Button, KIND, SIZE } from 'baseui/button'
@@ -7,16 +7,16 @@ import { Input, InputProps, StyledEndEnhancer, StyledInput } from 'baseui/input'
 import { Layer } from 'baseui/layer'
 import { ProgressBar } from 'baseui/progress-bar'
 import { toaster, ToasterContainer } from 'baseui/toast'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 import { useApi } from '../ApiProvider'
 import Schema from '../assets/Linie_8_Bandanlage_mit_Schrift.png'
-import { CoilInfos } from './CoilInfos'
 import { Feedback } from './Feedback'
 import { QrScan } from './QrScan'
 
 export type Coil = {
   hersteller: string
+  artikelNr: string
   materialNummer: string
   guete: string
   breite: number
@@ -39,21 +39,33 @@ const CustomEndEnhancer = withStyle(StyledEndEnhancer, ({ $theme }) => ({
   color: $theme.colors.primary,
 }))
 
-const CustomInput: React.FC<InputProps> = React.memo((props) => {
-  return (
-    <Input
-      {...props}
-      overrides={{
-        Input: {
-          component: CustomStyledInput,
-        },
-        EndEnhancer: {
-          component: CustomEndEnhancer,
-        },
-      }}
-    />
-  )
-})
+const CustomInput: React.FC<InputProps & { difference?: boolean }> = React.memo(
+  (props) => {
+    return (
+      <Input
+        {...props}
+        overrides={{
+          Input: {
+            component: CustomStyledInput,
+            style: ({ $theme }) => ({
+              backgroundColor: props.difference
+                ? $theme.colors.warning300
+                : $theme.colors.inputFillDisabled,
+            }),
+          },
+          EndEnhancer: {
+            component: CustomEndEnhancer,
+            style: ({ $theme }) => ({
+              backgroundColor: props.difference
+                ? $theme.colors.warning300
+                : $theme.colors.inputFillDisabled,
+            }),
+          },
+        }}
+      />
+    )
+  }
+)
 
 const DigitalCoil = React.memo(() => {
   const [css, theme] = useStyletron()
@@ -83,51 +95,11 @@ const DigitalCoil = React.memo(() => {
     cm70Out: 1.8,
     tension: 0.0,
   })
-  const [showCoilInfo, setShowCoilInfo] = useState(false)
   const [coil, setCoil] = useState<Coil>()
   const [showFeedback, setShowFeedback] = useState(false)
   const [showQrScan, setShowQrScan] = useState(false)
   const [loading, setLoading] = useState(false)
   const [api] = useApi()
-
-  useEffect(() => {
-    if (coil) {
-      setLoading(true)
-      api.defaultApi
-        .detectPointAnomaliesGetRecommendationPost({
-          breite: coil.breite,
-          dicke_vorn: coil.dickeVorn,
-          dicke_hinten: coil.dickeHinten,
-          zugfestigkeit_a: coil.zugfestigkeitA || 0.0,
-          zugfestigkeit_e: coil.zugfestigkeitE || 0.0,
-          streckgrenze_a: coil.streckgrenzeA || 0.0,
-          streckgrenze_e: coil.streckgrenzeE || 0.0,
-          bruchdehnung_a: coil.bruchdehnungA || 0.0,
-          bruchdehnung_e: coil.bruchdehnungE || 0.0,
-        })
-        .then((response) => {
-          return new Promise<void>((resolve, reject) => {
-            setTimeout(() => {
-              setRecommendation({
-                cm50In: -2.6,
-                cm50Out: 1.8,
-                cm70In: -2.0,
-                cm70Out: 1.8,
-                tension: 0.0,
-              })
-              resolve()
-            }, 2500)
-          })
-        })
-        .catch((error) => {
-          console.log(error)
-          toaster.negative(`${error}`, { key: 'api' })
-        })
-        .finally(() => {
-          setLoading(false)
-        })
-    }
-  }, [api, coil])
 
   return (
     <div
@@ -183,7 +155,9 @@ const DigitalCoil = React.memo(() => {
         <Button
           size={SIZE.mini}
           kind={KIND.primary}
-          onClick={() => setShowQrScan(true)}
+          onClick={() => {
+            setShowQrScan(true)
+          }}
           startEnhancer={<Icon path={mdiQrcodeScan} size={'1rem'} />}
           overrides={{
             StartEnhancer: {
@@ -194,21 +168,6 @@ const DigitalCoil = React.memo(() => {
           }}
         >
           Scannen
-        </Button>{' '}
-        <Button
-          size={SIZE.mini}
-          kind={KIND.primary}
-          onClick={() => setShowCoilInfo(true)}
-          startEnhancer={<Icon path={mdiPencil} size={'1rem'} />}
-          overrides={{
-            StartEnhancer: {
-              style: ({ $theme }) => ({
-                marginRight: $theme.sizing.scale300,
-              }),
-            },
-          }}
-        >
-          Bearbeiten
         </Button>
       </div>
       <div>
@@ -232,6 +191,22 @@ const DigitalCoil = React.memo(() => {
                 })}
               >
                 {coil?.hersteller || '--'}
+              </td>
+            </tr>
+            <tr>
+              <td
+                className={css({
+                  ...theme.typography.LabelMedium,
+                })}
+              >
+                Artikel-Nr.:
+              </td>
+              <td
+                className={css({
+                  paddingLeft: theme.sizing.scale600,
+                })}
+              >
+                {coil?.artikelNr || '--'}
               </td>
             </tr>
             <tr>
@@ -334,73 +309,41 @@ const DigitalCoil = React.memo(() => {
         </div>
         <div>
           <FormControl label={() => 'CM70 Einlauf'}>
-            <Input
+            <CustomInput
               endEnhancer={'mm'}
               value={setpoint.cm70In}
-              type={'number'}
-              step={0.1}
-              min={-5}
-              max={10}
-              onChange={(e) => {
-                setSetpoint({
-                  ...setpoint,
-                  cm70In: e.currentTarget.valueAsNumber,
-                })
-              }}
+              disabled
+              difference={setpoint.cm70In !== recommendation.cm70In}
             />
           </FormControl>
         </div>
         <div>
           <FormControl label={() => 'CM70 Auslauf'}>
-            <Input
+            <CustomInput
               endEnhancer={'mm'}
               value={setpoint.cm70Out}
-              type={'number'}
-              step={0.1}
-              min={-5}
-              max={10}
-              onChange={(e) => {
-                setSetpoint({
-                  ...setpoint,
-                  cm70Out: e.currentTarget.valueAsNumber,
-                })
-              }}
+              disabled
+              difference={setpoint.cm70Out !== recommendation.cm70Out}
             />
           </FormControl>
         </div>
         <div>
           <FormControl label={() => 'CM50 Einlauf'}>
-            <Input
+            <CustomInput
               endEnhancer={'mm'}
               value={setpoint.cm50In}
-              type={'number'}
-              step={0.01}
-              min={-5}
-              max={10}
-              onChange={(e) => {
-                setSetpoint({
-                  ...setpoint,
-                  cm50In: e.currentTarget.valueAsNumber,
-                })
-              }}
+              disabled
+              difference={setpoint.cm50In !== recommendation.cm50In}
             />
           </FormControl>
         </div>
         <div>
           <FormControl label={() => 'CM50 Auslauf'}>
-            <Input
+            <CustomInput
               endEnhancer={'mm'}
               value={setpoint.cm50Out}
-              type={'number'}
-              step={0.1}
-              min={-5}
-              max={10}
-              onChange={(e) => {
-                setSetpoint({
-                  ...setpoint,
-                  cm50Out: e.currentTarget.valueAsNumber,
-                })
-              }}
+              disabled
+              difference={setpoint.cm50Out !== recommendation.cm50Out}
             />
           </FormControl>
         </div>
@@ -463,26 +406,41 @@ const DigitalCoil = React.memo(() => {
       >
         Feedback
       </Button>
-      <CoilInfos
-        coil={coil}
-        isOpen={showCoilInfo}
-        onClose={(coil) => {
-          setShowCoilInfo(false)
-          if (coil !== undefined) {
-            setCoil(coil)
-          }
-        }}
-      />
       <QrScan
         isOpen={showQrScan}
-        onClose={(coil) => {
+        onClose={(coilId) => {
           setShowQrScan(false)
-          if (coil !== undefined) {
+          if (coilId !== undefined) {
             toaster.positive('Barcode erfolgreich gescannt!', {
               key: 'qr-scan',
               autoHideDuration: 2000,
             })
-            setCoil(coil)
+            setLoading(true)
+            api.defaultApi
+              .requestMetadataRecommendationRequestMetadataRecommendationPost({
+                id_fm: coilId,
+              })
+              .then((response) => {
+                setCoil({
+                  hersteller: response.data.supplier,
+                  artikelNr: response.data.id_material,
+                  materialNummer: coilId,
+                  guete: response.data.quality_description,
+                  breite: response.data.width,
+                  dickeHinten: response.data.thickness,
+                  dickeVorn: response.data.thickness,
+                })
+                setRecommendation({
+                  cm50In: response.data.cm50_einlauf,
+                  cm50Out: response.data.cm50_auslauf,
+                  cm70In: response.data.cm70_einlauf,
+                  cm70Out: response.data.cm70_auslauf,
+                  tension: 0,
+                })
+              })
+              .finally(() => {
+                setLoading(false)
+              })
           }
         }}
       />
